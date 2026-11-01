@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kumpul Sedulur - Putune Simbah Dul-Bandiyatun | ver. 1.0.</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- PeerJS Library CDN -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar for Chat & Participant lists */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(51, 65, 85, 0.8);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(71, 85, 105, 1);
+    }
+
+    /* Mirroring local camera feed */
+    .mirror-mode {
+      transform: scaleX(-1);
+    }
+
+    /* Backdrop Glassmorphism styling */
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Audio Indicator Wave */
+    .bar-1 { animation: wave 1.2s ease-in-out infinite; }
+    .bar-2 { animation: wave 0.8s ease-in-out infinite 0.2s; }
+    .bar-3 { animation: wave 1.0s ease-in-out infinite 0.4s; }
+    @keyframes wave {
+      0%, 100% { height: 4px; }
+      50% { height: 14px; }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans h-full overflow-x-hidden selection:bg-indigo-500 selection:text-white">
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ========================================== -->
+  <!-- 1. LANDING & LOBBY VIEW                    -->
+  <!-- ========================================== -->
+  <div id="view-landing" class="min-h-screen flex flex-col justify-between relative overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+    <!-- Ambient Lighting Glows -->
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-1/2 -right-40 w-96 h-96 bg-emerald-600/15 rounded-full blur-3xl pointer-events-none"></div>
+
+    <!-- Header / Branding -->
+    <header class="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between z-10">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-emerald-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <i data-lucide="video" class="w-5 h-5 text-white"></i>
+        </div>
+        <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">Kumpul Sedulur</span>
+        <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          GitHub Pages Ready
+        </span>
+      </div>
+
+     <!-- <div class="hidden sm:flex items-center gap-2 text-xs text-slate-400 bg-slate-900/80 px-3 py-1.5 rounded-full border border-slate-800">
+        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+        <span>P2P Direct WebRTC (Google/Mozilla STUN Enabled)</span>
+      </div> -->
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="w-full max-w-7xl mx-auto px-6 py-8 my-auto z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <!-- Left Column: Copywriting -->
+      <div class="lg:col-span-7 space-y-6 text-left">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs font-semibold text-indigo-300">
+          <i data-lucide="users" class="w-3.5 h-3.5 text-indigo-400"></i>
+          <span>Kumpul Sedulur Putune Simbah Dul-Bandiyatun Antar-Kota & Beda Operator</span>
+        </div>
+        
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
+          Kumpul Sedulur Online. <br class="hidden sm:inline"/>
+          <span class="bg-gradient-to-r from-indigo-400 via-purple-300 to-emerald-400 bg-clip-text text-transparent">
+            Tanpa Akun & Tanpa Server Backend.
+          </span>
+        </h1>
+        
+        <p class="text-base sm:text-lg text-slate-400 max-w-2xl leading-relaxed">
+          Kumpulkan sedulur di berbagai kota. Aplikasi ini dikembangkan khusus untuk Keluarga Putune Simbah Dul-Bandiyatun. Ampun di-share keluar nggih.. Terlalu beresiko. Resikonya tidak sebanding dengan manfaatnya. Fokus saja kepada fungsinya. Cukup buat ruang rapat, bagikan link, dan langsung mengobrol tanpa perlu daftar akun. Sing penting maos BISMILLAH sik yo Lur. Yen wayah SHOLAT, ndang SHOLAT yo Lur.. Penting Kui!
+        </p>
+
+        <!-- Feature Pills -->
+       <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-xs font-medium text-slate-300">
+          <div class="flex items-center gap-2 bg-slate-900/50 p-2.5 rounded-xl border border-slate-800">
+            <i data-lucide="wifi" class="w-4 h-4 text-emerald-400"></i>
+            <span>Lintas Penyedia Internet</span>
+          </div>
+          <div class="flex items-center gap-2 bg-slate-900/50 p-2.5 rounded-xl border border-slate-800">
+            <i data-lucide="lock" class="w-4 h-4 text-indigo-400"></i>
+            <span>Koneksi Langsung</span>
+          </div>
+          <div class="flex items-center gap-2 bg-slate-900/50 p-2.5 rounded-xl border border-slate-800">
+            <i data-lucide="message-square" class="w-4 h-4 text-purple-400"></i>
+            <span>Chat Real-Time</span>
+          </div> 
+        </div>
+      </div>
+
+      <!-- Right Column: Room Controls Card -->
+      <div class="lg:col-span-5">
+        <div class="glass-panel p-6 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+          
+          <!-- Card Header Tabs -->
+          <div class="flex bg-slate-900/90 p-1.5 rounded-xl border border-slate-800 mb-6">
+            <button id="tab-btn-create" onclick="switchTab('create')" class="flex-1 py-2.5 text-sm font-semibold rounded-lg bg-indigo-600 text-white shadow-md transition duration-200">
+              Buat Ruang Baru
+            </button>
+            <button id="tab-btn-join" onclick="switchTab('join')" class="flex-1 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:text-white transition duration-200">
+              Gabung Ruangan
+            </button>
+          </div>
+
+          <!-- TAB 1: CREATE ROOM -->
+          <div id="form-create-room" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Nama Anda / Panggilan</label>
+              <div class="relative">
+                <i data-lucide="user" class="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                <input type="text" id="create-display-name" placeholder="Contoh: Yu Rofi'" 
+                       class="w-full pl-11 pr-4 py-3 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Kode Ruangan Keluarga</label>
+              <div class="flex items-center gap-2">
+                <div class="relative flex-1">
+                  <i data-lucide="hash" class="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                  <input type="text" id="create-room-code" readonly 
+                         class="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-indigo-300 font-mono font-semibold focus:outline-none cursor-not-allowed">
+                </div>
+                <button type="button" onclick="generateNewRoomCode()" title="Acak Kode Baru" class="p-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl border border-slate-700 transition">
+                  <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                </button>
+              </div>
+            </div>
+
+            <button onclick="initiateMeeting(true)" class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-semibold shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition transform active:scale-[0.99]">
+              <span>Buat Ruangan & Masuk</span>
+              <i data-lucide="arrow-right" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <!-- TAB 2: JOIN ROOM -->
+          <div id="form-join-room" class="space-y-4 hidden">
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Nama Anda / Karan</label>
+              <div class="relative">
+                <i data-lucide="user" class="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                <input type="text" id="join-display-name" placeholder="Contoh: Habib" 
+                       class="w-full pl-11 pr-4 py-3 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Kode Ruangan atau Link</label>
+              <div class="relative">
+                <i data-lucide="key" class="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                <input type="text" id="join-room-code" placeholder="Sing wes didumke" 
+                       class="w-full pl-11 pr-4 py-3 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white font-mono placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+              </div>
+            </div>
+
+            <button onclick="initiateMeeting(false)" class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-semibold shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 transition transform active:scale-[0.99]">
+              <span>Gabung Ruangan</span>
+              <i data-lucide="log-in" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <p class="text-center text-[11px] text-slate-500 mt-4 leading-relaxed">
+            💡 <strong>Petunjuk:</strong> Setelah masuk, klik tombol <strong>"Salin Link"</strong> Didum nang group keluarga utowo sing arep diajak ngobrol.
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full border-t border-slate-900 bg-slate-950 py-4 text-center text-xs text-slate-600">
+      <p>© Kumpul Sedulur - Powered by PeerJS & WebRTC STUN. Direct P2P video calling. Nuwun.</p>
+    </footer>
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- 2. IN-MEETING VIEW                         -->
+  <!-- ========================================== -->
+  <div id="view-meeting" class="min-h-screen flex flex-col bg-slate-950 hidden relative overflow-hidden">
+    
+    <!-- TOP TOOLBAR -->
+    <header class="h-16 border-b border-slate-800/80 bg-slate-900/90 px-4 sm:px-6 flex items-center justify-between z-20 gap-2">
+      <!-- Left: Room Code & Share -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <div class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700/80 border border-slate-700/80 px-3 py-1.5 rounded-xl transition cursor-pointer" onclick="copyShareLink()">
+          <i data-lucide="hash" class="w-4 h-4 text-indigo-400"></i>
+          <span id="meeting-code-badge" class="font-mono text-xs sm:text-sm font-bold text-slate-200">Terserah</span>
+          <i data-lucide="copy" class="w-3.5 h-3.5 text-slate-400 ml-1"></i>
+        </div>
+
+        <!-- Connection Status Pill -->
+        <div id="connection-status-pill" class="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+          <span id="connection-status-text">Menghubungkan...</span>
+        </div>
+      </div>
+
+      <!-- Center: Timer -->
+      <div class="hidden md:flex items-center gap-2 bg-slate-950/70 px-3.5 py-1.5 rounded-full border border-slate-800 text-xs font-mono text-slate-300">
+        <i data-lucide="clock" class="w-3.5 h-3.5 text-indigo-400 animate-pulse"></i>
+        <span id="meeting-timer">00:00:00</span>
+      </div>
+
+      <!-- Right: Participants Count & Host Tag -->
+      <div class="flex items-center gap-3">
+        <div id="host-badge" class="hidden items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+          <i data-lucide="crown" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span class="hidden sm:inline">Pembuat Ruang</span>
+        </div>
+
+        <button onclick="toggleDrawer('participants')" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 text-xs font-medium transition">
+          <i data-lucide="users" class="w-4 h-4 text-indigo-400"></i>
+          <span id="participant-count-badge">1 Peserta</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN STAGE & SIDEBAR CONTAINER -->
+    <div class="flex-1 flex overflow-hidden relative">
+      
+      <!-- VIDEO STAGE GRID -->
+      <main id="stage-container" class="flex-1 p-3 sm:p-6 overflow-y-auto flex items-center justify-center">
+        <!-- Dynamic Responsive Video Grid -->
+        <div id="video-grid" class="w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 gap-4 auto-rows-fr">
+          
+          <!-- LOCAL USER VIDEO TILE -->
+          <div id="tile-local" class="relative bg-slate-900 rounded-2xl border-2 border-indigo-500/50 overflow-hidden shadow-2xl aspect-video flex items-center justify-center group">
+            <video id="local-video" autoplay playsinline muted class="w-full h-full object-cover mirror-mode hidden"></video>
+
+            <!-- Avatar Placeholder (Shown when video is disabled) -->
+            <div id="local-avatar" class="flex flex-col items-center justify-center gap-3">
+              <div class="w-20 h-20 rounded-full bg-indigo-600/30 border-2 border-indigo-500 flex items-center justify-center text-indigo-200 text-2xl font-bold uppercase shadow-lg">
+                <span id="local-avatar-initial">U</span>
+              </div>
+              <span id="local-avatar-name" class="text-xs text-slate-300 font-medium">Anda</span>
+            </div>
+
+            <!-- Bottom Label Bar -->
+            <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+              <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-950/80 backdrop-blur-md border border-slate-800 text-xs text-white font-medium">
+                <span id="local-tile-label">Anda</span>
+                <div id="local-audio-wave" class="flex items-end gap-0.5 h-3 ml-1">
+                  <span class="w-1 bg-emerald-400 rounded-full bar-1"></span>
+                  <span class="w-1 bg-emerald-400 rounded-full bar-2"></span>
+                  <span class="w-1 bg-emerald-400 rounded-full bar-3"></span>
+                </div>
+              </div>
+              
+              <div id="local-mic-muted-badge" class="w-7 h-7 rounded-lg bg-red-500/90 backdrop-blur-md flex items-center justify-center text-white hidden">
+                <i data-lucide="mic-off" class="w-3.5 h-3.5"></i>
+              </div>
+            </div>
+
+            <div class="absolute top-3 left-3 bg-indigo-600/90 text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded">
+              Lokal (Anda)
+            </div>
+          </div>
+
+          <!-- REMOTE PARTICIPANT VIDEO TILES INJECTED HERE VIA JS -->
+
+        </div>
+      </main>
+
+      <!-- SIDEBAR: CHAT PANEL -->
+      <aside id="drawer-chat" class="w-full sm:w-80 border-l border-slate-800 bg-slate-900/95 flex flex-col hidden z-30 transition-all duration-300">
+        <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="message-square" class="w-4 h-4 text-indigo-400"></i>
+            <h3 class="font-bold text-sm text-slate-200">Chat Keluarga</h3>
+          </div>
+          <button onclick="toggleDrawer('chat')" class="text-slate-400 hover:text-white p-1 rounded-lg">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-xs">
+          <div class="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 text-slate-400 text-center leading-relaxed">
+            💬 Pesan terhubung langsung P2P antar-perangkat. Data tidak disimpan di server manapun.
+          </div>
+        </div>
+
+        <!-- Chat Input Form -->
+        <form onsubmit="handleSendChat(event)" class="p-3 border-t border-slate-800 bg-slate-950/50 flex items-center gap-2">
+          <input type="text" id="chat-input" placeholder="Tulis pesan..." 
+                 class="flex-1 px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+          <button type="submit" class="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center justify-center">
+            <i data-lucide="send" class="w-4 h-4"></i>
+          </button>
+        </form>
+      </aside>
+
+      <!-- SIDEBAR: PARTICIPANTS PANEL -->
+      <aside id="drawer-participants" class="w-full sm:w-80 border-l border-slate-800 bg-slate-900/95 flex flex-col hidden z-30 transition-all duration-300">
+        <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="users" class="w-4 h-4 text-indigo-400"></i>
+            <h3 class="font-bold text-sm text-slate-200">Daftar Anggota</h3>
+          </div>
+          <button onclick="toggleDrawer('participants')" class="text-slate-400 hover:text-white p-1 rounded-lg">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div class="p-3 border-b border-slate-800 bg-slate-950/40">
+          <button onclick="copyShareLink()" class="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center justify-center gap-2 border border-slate-700/80 transition">
+            <i data-lucide="user-plus" class="w-4 h-4 text-emerald-400"></i>
+            <span>Undang Anggota (Salin Link)</span>
+          </button>
+        </div>
+
+        <div id="participants-list" class="flex-1 p-3 overflow-y-auto space-y-2">
+          <!-- Dynamically filled by JS -->
+        </div>
+      </aside>
+
+    </div>
+
+    <!-- BOTTOM CONTROL BAR -->
+    <footer class="h-20 border-t border-slate-800/80 bg-slate-900/95 px-4 flex items-center justify-between z-20">
+      
+      <!-- Left Controls -->
+      <div class="hidden sm:flex items-center gap-2">
+        <button onclick="copyShareLink()" class="p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/70 transition flex items-center gap-2 text-xs font-semibold">
+          <i data-lucide="share-2" class="w-4 h-4 text-indigo-400"></i>
+          <span>Bagikan Link</span>
+        </button>
+      </div>
+
+      <!-- Center Action Buttons -->
+      <div class="flex items-center gap-3 mx-auto sm:mx-0">
+        <!-- Mic Button -->
+        <button id="btn-toggle-mic" onclick="toggleMic()" class="w-12 h-12 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center border border-slate-700 transition shadow-md">
+          <i data-lucide="mic" id="icon-mic-on" class="w-5 h-5"></i>
+          <i data-lucide="mic-off" id="icon-mic-off" class="w-5 h-5 text-red-400 hidden"></i>
+        </button>
+
+        <!-- Camera Button -->
+        <button id="btn-toggle-cam" onclick="toggleCam()" class="w-12 h-12 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center border border-slate-700 transition shadow-md">
+          <i data-lucide="video" id="icon-cam-on" class="w-5 h-5"></i>
+          <i data-lucide="video-off" id="icon-cam-off" class="w-5 h-5 text-red-400 hidden"></i>
+        </button>
+
+        <!-- Screen Share Button -->
+        <button id="btn-toggle-screen" onclick="toggleScreenShare()" class="w-12 h-12 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center border border-slate-700 transition shadow-md">
+          <i data-lucide="monitor-up" class="w-5 h-5"></i>
+        </button>
+
+        <!-- Leave Call Button -->
+        <button onclick="leaveCall()" class="px-5 h-12 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-semibold flex items-center gap-2 shadow-lg shadow-red-600/30 transition">
+          <i data-lucide="phone-off" class="w-5 h-5"></i>
+          <span class="hidden sm:inline text-xs">Keluar</span>
+        </button>
+      </div>
+
+      <!-- Right Controls -->
+      <div class="flex items-center gap-2">
+        <button onclick="toggleDrawer('chat')" class="p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/70 transition relative">
+          <i data-lucide="message-square" class="w-4 h-4"></i>
+          <span id="unread-chat-dot" class="w-2.5 h-2.5 bg-indigo-500 rounded-full absolute top-2 right-2 hidden"></span>
+        </button>
+      </div>
+    </footer>
+
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- 3. ENDED CALL VIEW                         -->
+  <!-- ========================================== -->
+  <div id="view-ended" class="min-h-screen flex items-center justify-center p-6 bg-slate-950 relative hidden">
+    <div class="glass-panel p-8 sm:p-10 rounded-3xl max-w-lg w-full text-center space-y-6 shadow-2xl">
+      <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto shadow-lg shadow-indigo-500/10">
+        <i data-lucide="heart-handshake" class="w-8 h-8"></i>
+      </div>
+
+      <h2 class="text-2xl font-extrabold text-white">Panggilan Berakhir</h2>
+      <p class="text-sm text-slate-400 leading-relaxed">
+        Terima kasih telah menggunakan Kumpul Sedulur. Semua koneksi P2P media dan pesan telah ditutup secara aman.
+      </p>
+
+      <button onclick="returnToLanding()" class="w-full py-3.5 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition">
+        Kembali ke Halaman Utama
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- JAVASCRIPT PEERJS & WEBRTC MESH ENGINE     -->
+  <!-- ========================================== -->
+  <script>
+    // Public STUN Servers for NAT Traversal across different ISPs
+    const iceServersConfig = {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' },
+        { urls: 'stun:stun.services.mozilla.com' }
+      ]
+    };
+
+    // Global Application State
+    const appState = {
+      peer: null,
+      myPeerId: '',
+      roomCode: '',
+      myName: '',
+      isHost: false,
+      localStream: null,
+      screenStream: null,
+      micOn: true,
+      camOn: true,
+      screenSharing: false,
+      timerInterval: null,
+      secondsElapsed: 0,
+      // Mesh Peer Store
+      dataConnections: {}, // peerId -> DataConnection
+      mediaCalls: {},      // peerId -> MediaConnection
+      participants: {}    // peerId -> { name, micOn, camOn, stream }
+    };
+
+    // Document Ready Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      generateNewRoomCode();
+      checkUrlParams();
+    });
+
+    // Toast Alert Helper
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      const bgColor = type === 'success' ? 'bg-emerald-950/90 border-emerald-500/50 text-emerald-200' :
+                      type === 'error' ? 'bg-red-950/90 border-red-500/50 text-red-200' :
+                      'bg-slate-900/90 border-indigo-500/50 text-slate-200';
+      
+      toast.className = `px-4 py-3 rounded-xl border text-xs font-semibold backdrop-blur-md shadow-2xl transition-all duration-300 transform translate-y-2 opacity-0 flex items-center gap-2 ${bgColor}`;
+      toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle-2' : type === 'error' ? 'alert-triangle' : 'info'}" class="w-4 h-4"></i><span>${message}</span>`;
+      
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', '-translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Auto Check URL Query Parameters for Room Invitation
+    function checkUrlParams() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomParam = urlParams.get('room');
+      if (roomParam) {
+        switchTab('join');
+        document.getElementById('join-room-code').value = roomParam;
+        showToast('Link undangan terdeteksi! Masukkan nama Anda.', 'info');
+      }
+    }
+
+    // Tab Switcher between Create and Join
+    function switchTab(tab) {
+      const btnCreate = document.getElementById('tab-btn-create');
+      const btnJoin = document.getElementById('tab-btn-join');
+      const formCreate = document.getElementById('form-create-room');
+      const formJoin = document.getElementById('form-join-room');
+
+      if (tab === 'create') {
+        btnCreate.className = 'flex-1 py-2.5 text-sm font-semibold rounded-lg bg-indigo-600 text-white shadow-md transition duration-200';
+        btnJoin.className = 'flex-1 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:text-white transition duration-200';
+        formCreate.classList.remove('hidden');
+        formJoin.classList.add('hidden');
+      } else {
+        btnJoin.className = 'flex-1 py-2.5 text-sm font-semibold rounded-lg bg-emerald-600 text-white shadow-md transition duration-200';
+        btnCreate.className = 'flex-1 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:text-white transition duration-200';
+        formJoin.classList.remove('hidden');
+        formCreate.classList.add('hidden');
+      }
+    }
+
+    // Generate random room code
+    function generateNewRoomCode() {
+      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      let code = 'keluarga-';
+      for (let i = 0; i < 4; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      document.getElementById('create-room-code').value = code;
+    }
+
+    // Master function to initiate meeting
+    async function initiateMeeting(isHost) {
+      appState.isHost = isHost;
+      const nameInput = isHost ? document.getElementById('create-display-name').value : document.getElementById('join-display-name').value;
+      
+      if (!nameInput.trim()) {
+        showToast('Silakan isi nama panggilan Anda terlebih dahulu.', 'error');
+        return;
+      }
+      appState.myName = nameInput.trim();
+
+      let rawCode = isHost ? document.getElementById('create-room-code').value : document.getElementById('join-room-code').value;
+      if (!rawCode.trim()) {
+        showToast('Kode ruangan tidak boleh kosong.', 'error');
+        return;
+      }
+
+      // Handle raw code or full URL
+      if (rawCode.includes('?room=')) {
+        rawCode = rawCode.split('?room=')[1];
+      }
+      appState.roomCode = rawCode.trim().toLowerCase();
+
+      // Setup Peer ID scheme: Host uses fixed room ID suffix, Guest uses unique ID
+      if (isHost) {
+        appState.myPeerId = `omf-${appState.roomCode}-host`;
+      } else {
+        const randId = Math.random().toString(36).substring(2, 7);
+        appState.myPeerId = `omf-${appState.roomCode}-${randId}`;
+      }
+
+      // Transition to Meeting View
+      document.getElementById('view-landing').classList.add('hidden');
+      document.getElementById('view-meeting').classList.remove('hidden');
+
+      // Update UI Header
+      document.getElementById('meeting-code-badge').innerText = appState.roomCode;
+      document.getElementById('local-tile-label').innerText = `${appState.myName} (Anda)`;
+      document.getElementById('local-avatar-initial').innerText = appState.myName.charAt(0).toUpperCase();
+      document.getElementById('local-avatar-name').innerText = appState.myName;
+
+      if (isHost) {
+        document.getElementById('host-badge').classList.remove('hidden');
+        document.getElementById('host-badge').classList.add('flex');
+      }
+
+      // 1. Get Local Camera & Microphone Media Stream
+      await setupLocalMedia();
+
+      // 2. Initialize PeerJS Connection
+      initPeerJS();
+
+      // 3. Start Timer & Render List
+      startMeetingTimer();
+      renderParticipantsList();
+    }
+
+    // Get User Camera & Mic Media Stream
+    async function setupLocalMedia() {
+      const videoEl = document.getElementById('local-video');
+      const avatarEl = document.getElementById('local-avatar');
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        appState.localStream = stream;
+        videoEl.srcObject = stream;
+        videoEl.classList.remove('hidden');
+        avatarEl.classList.add('hidden');
+        appState.camOn = true;
+        appState.micOn = true;
+      } catch (err) {
+        console.warn('Media warning:', err);
+        showToast('Kamera/Mic tidak ditemukan atau diizin terblokir. Menggunakan audio dummy.', 'error');
+        
+        // Fallback: Create Canvas/Audio dummy stream so PeerJS call does not break
+        appState.localStream = createDummyMediaStream();
+        videoEl.classList.add('hidden');
+        avatarEl.classList.remove('hidden');
+        appState.camOn = false;
+        appState.micOn = false;
+      }
+    }
+
+    // Dummy Canvas Stream fallback
+    function createDummyMediaStream() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 320;
+      canvas.height = 240;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, 320, 240);
+      
+      const stream = canvas.captureStream(1);
+      // Audio dummy
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const dst = audioCtx.createMediaStreamDestination();
+      osc.connect(dst);
+      stream.addTrack(dst.stream.getAudioTracks()[0]);
+      return stream;
+    }
+
+    // Initialize PeerJS Client
+    function initPeerJS() {
+      updateConnectionStatus('connecting', 'Menghubungkan ke server...');
+
+      appState.peer = new Peer(appState.myPeerId, {
+        config: iceServersConfig,
+        debug: 1
+      });
+
+      // Peer Connected to Signaling Server
+      appState.peer.on('open', (id) => {
+        console.log('PeerJS connected with ID:', id);
+        updateConnectionStatus('connected', 'Terhubung P2P');
+
+        if (!appState.isHost) {
+          // GUEST: Connect data & call to Host
+          const hostPeerId = `omf-${appState.roomCode}-host`;
+          connectToPeer(hostPeerId, true);
+        } else {
+          showToast(`Ruang rapat ${appState.roomCode} siap! Bagikan link ke keluarga.`, 'success');
+        }
+      });
+
+      // Handle Incoming Data Connection
+      appState.peer.on('connection', (conn) => {
+        setupDataConnection(conn);
+      });
+
+      // Handle Incoming Media Call
+      appState.peer.on('call', (call) => {
+        setupMediaCall(call);
+      });
+
+      // Handle Errors
+      appState.peer.on('error', (err) => {
+        console.error('PeerJS Error:', err);
+        if (err.type === 'unavailable-id') {
+          showToast('Kode ruang rapat ini sudah aktif dan sedang dipakai!', 'error');
+        } else if (err.type === 'peer-unavailable') {
+          showToast('Host ruangan tidak ditemukan. Pastikan kode ruangan benar.', 'error');
+        } else {
+          showToast(`Koneksi error: ${err.message}`, 'error');
+        }
+        updateConnectionStatus('disconnected', 'Terputus');
+      });
+    }
+
+    // Setup Data Connection for signaling mesh & chat
+    function setupDataConnection(conn) {
+      const remotePeerId = conn.peer;
+      appState.dataConnections[remotePeerId] = conn;
+
+      conn.on('open', () => {
+        console.log('Data connection open with:', remotePeerId);
+        
+        // Send handshake JOIN message with my info
+        conn.send({
+          type: 'JOIN',
+          peerId: appState.myPeerId,
+          name: appState.myName,
+          micOn: appState.micOn,
+          camOn: appState.camOn
+        });
+      });
+
+      conn.on('data', (data) => {
+        handleIncomingDataMessage(remotePeerId, data);
+      });
+
+      conn.on('close', () => {
+        removeParticipant(remotePeerId);
+      });
+    }
+
+    // Setup Media Call (WebRTC Video/Audio stream)
+    function setupMediaCall(call) {
+      const remotePeerId = call.peer;
+      appState.mediaCalls[remotePeerId] = call;
+
+      // Answer incoming call with local stream
+      call.answer(appState.localStream);
+
+      // Handle remote stream
+      call.on('stream', (remoteStream) => {
+        console.log('Received stream from:', remotePeerId);
+        if (!appState.participants[remotePeerId]) {
+          appState.participants[remotePeerId] = {
+            name: 'Saudara',
+            micOn: true,
+            camOn: true,
+            stream: remoteStream
+          };
+        } else {
+          appState.participants[remotePeerId].stream = remoteStream;
+        }
+
+        renderOrUpdateVideoTile(remotePeerId, remoteStream);
+        renderParticipantsList();
+      });
+
+      call.on('close', () => {
+        removeParticipant(remotePeerId);
+      });
+    }
+
+    // Connect to a peer (initiate data channel & call)
+    function connectToPeer(targetPeerId, isHostTarget = false) {
+      if (targetPeerId === appState.myPeerId || appState.dataConnections[targetPeerId]) return;
+
+      console.log('Connecting to target peer:', targetPeerId);
+
+      // 1. Data Connection
+      const conn = appState.peer.connect(targetPeerId);
+      setupDataConnection(conn);
+
+      // 2. Media Connection
+      const call = appState.peer.call(targetPeerId, appState.localStream);
+      setupMediaCall(call);
+    }
+
+    // Message Protocol Handler
+    function handleIncomingDataMessage(fromPeerId, data) {
+      switch (data.type) {
+        case 'JOIN':
+          // Save peer info
+          appState.participants[fromPeerId] = {
+            name: data.name,
+            micOn: data.micOn,
+            camOn: data.camOn,
+            stream: null
+          };
+
+          showToast(`${data.name} bergabung dalam rapat`, 'info');
+          renderParticipantsList();
+
+          // HOST RESPONSIBILITY: Broadcast new peer list to everyone so full mesh forms
+          if (appState.isHost) {
+            broadcastPeerList();
+          }
+          break;
+
+        case 'PEER_LIST':
+          // Received updated list of peers in room from Host
+          data.peers.forEach((p) => {
+            if (p.peerId !== appState.myPeerId && !appState.dataConnections[p.peerId]) {
+              connectToPeer(p.peerId);
+            }
+          });
+          break;
+
+        case 'MEDIA_STATUS':
+          if (appState.participants[fromPeerId]) {
+            appState.participants[fromPeerId].micOn = data.micOn;
+            appState.participants[fromPeerId].camOn = data.camOn;
+            updateTileMediaStatus(fromPeerId, data.micOn, data.camOn);
+            renderParticipantsList();
+          }
+          break;
+
+        case 'CHAT':
+          appendChatMessage(data.sender, data.text, data.time, false);
+          break;
+      }
+    }
+
+    // Broadcast current list of active peers (Host Only)
+    function broadcastPeerList() {
+      const peerList = Object.keys(appState.participants).map(id => ({
+        peerId: id,
+        name: appState.participants[id].name
+      }));
+      peerList.push({ peerId: appState.myPeerId, name: appState.myName });
+
+      broadcastMessage({
+        type: 'PEER_LIST',
+        peers: peerList
+      });
+    }
+
+    // Broadcast data message to all connected peers
+    function broadcastMessage(msgObj) {
+      Object.values(appState.dataConnections).forEach(conn => {
+        if (conn.open) {
+          conn.send(msgObj);
+        }
+      });
+    }
+
+    // Render or Update Video Grid Tile for remote peer
+    function renderOrUpdateVideoTile(peerId, stream) {
+      const grid = document.getElementById('video-grid');
+      let tile = document.getElementById(`tile-${peerId}`);
+      const peerInfo = appState.participants[peerId] || { name: 'Saudara' };
+
+      if (!tile) {
+        tile = document.createElement('div');
+        tile.id = `tile-${peerId}`;
+        tile.className = 'relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-2xl aspect-video flex items-center justify-center group';
+        
+        tile.innerHTML = `
+          <video id="video-${peerId}" autoplay playsinline class="w-full h-full object-cover"></video>
+          
+          <div id="avatar-${peerId}" class="flex flex-col items-center justify-center gap-3 hidden">
+            <div class="w-20 h-20 rounded-full bg-emerald-600/30 border-2 border-emerald-500 flex items-center justify-center text-emerald-200 text-2xl font-bold uppercase">
+              <span>${peerInfo.name.charAt(0).toUpperCase()}</span>
+            </div>
+            <span class="text-xs text-slate-300 font-medium">${escapeHTML(peerInfo.name)}</span>
+          </div>
+
+          <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-950/80 backdrop-blur-md border border-slate-800 text-xs text-white font-medium">
+              <span>${escapeHTML(peerInfo.name)}</span>
+              <div id="audio-wave-${peerId}" class="flex items-end gap-0.5 h-3 ml-1">
+                <span class="w-1 bg-emerald-400 rounded-full bar-1"></span>
+                <span class="w-1 bg-emerald-400 rounded-full bar-2"></span>
+              </div>
+            </div>
+            
+            <div id="mic-off-${peerId}" class="w-7 h-7 rounded-lg bg-red-500/90 backdrop-blur-md flex items-center justify-center text-white ${peerInfo.micOn ? 'hidden' : ''}">
+              <i data-lucide="mic-off" class="w-3.5 h-3.5"></i>
+            </div>
+          </div>
+        `;
+
+        grid.appendChild(tile);
+        lucide.createIcons();
+      }
+
+      const videoEl = document.getElementById(`video-${peerId}`);
+      if (videoEl && stream) {
+        videoEl.srcObject = stream;
+      }
+
+      adjustGridColumns();
+    }
+
+    // Update mic/cam tile state
+    function updateTileMediaStatus(peerId, micOn, camOn) {
+      const micBadge = document.getElementById(`mic-off-${peerId}`);
+      const audioWave = document.getElementById(`audio-wave-${peerId}`);
+      const avatarEl = document.getElementById(`avatar-${peerId}`);
+      const videoEl = document.getElementById(`video-${peerId}`);
+
+      if (micBadge) {
+        micBadge.classList.toggle('hidden', micOn);
+      }
+      if (audioWave) {
+        audioWave.classList.toggle('hidden', !micOn);
+      }
+      if (avatarEl && videoEl) {
+        if (!camOn) {
+          videoEl.classList.add('hidden');
+          avatarEl.classList.remove('hidden');
+        } else {
+          videoEl.classList.remove('hidden');
+          avatarEl.classList.add('hidden');
+        }
+      }
+    }
+
+    // Dynamically adjust grid layout based on peer count
+    function adjustGridColumns() {
+      const grid = document.getElementById('video-grid');
+      const count = grid.children.length;
+
+      grid.className = 'w-full grid gap-4 auto-rows-fr transition-all duration-300 ' + 
+        (count === 1 ? 'max-w-3xl grid-cols-1' :
+         count === 2 ? 'max-w-4xl grid-cols-1 sm:grid-cols-2' :
+         count <= 4 ? 'max-w-5xl grid-cols-1 sm:grid-cols-2' :
+         'max-w-6xl grid-cols-2 lg:grid-cols-3');
+    }
+
+    // Remove participant from meeting
+    function removeParticipant(peerId) {
+      const p = appState.participants[peerId];
+      if (p) {
+        showToast(`${p.name} keluar dari rapat`, 'info');
+      }
+
+      delete appState.participants[peerId];
+      delete appState.dataConnections[peerId];
+      delete appState.mediaCalls[peerId];
+
+      const tile = document.getElementById(`tile-${peerId}`);
+      if (tile) tile.remove();
+
+      adjustGridColumns();
+      renderParticipantsList();
+    }
+
+    // Toggle Local Microphone
+    function toggleMic() {
+      appState.micOn = !appState.micOn;
+      const iconOn = document.getElementById('icon-mic-on');
+      const iconOff = document.getElementById('icon-mic-off');
+      const btn = document.getElementById('btn-toggle-mic');
+      const micBadge = document.getElementById('local-mic-muted-badge');
+      const audioWave = document.getElementById('local-audio-wave');
+
+      if (appState.localStream && appState.localStream.getAudioTracks().length > 0) {
+        appState.localStream.getAudioTracks()[0].enabled = appState.micOn;
+      }
+
+      if (appState.micOn) {
+        iconOn.classList.remove('hidden');
+        iconOff.classList.add('hidden');
+        btn.classList.remove('bg-red-600');
+        micBadge.classList.add('hidden');
+        audioWave.classList.remove('hidden');
+        showToast('Mikrofon Anda Aktif');
+      } else {
+        iconOn.classList.add('hidden');
+        iconOff.classList.remove('hidden');
+        btn.classList.add('bg-red-600');
+        micBadge.classList.remove('hidden');
+        audioWave.classList.add('hidden');
+        showToast('Mikrofon Dibisukan');
+      }
+
+      // Broadcast media status
+      broadcastMessage({
+        type: 'MEDIA_STATUS',
+        micOn: appState.micOn,
+        camOn: appState.camOn
+      });
+    }
+
+    // Toggle Local Camera
+    function toggleCam() {
+      appState.camOn = !appState.camOn;
+      const iconOn = document.getElementById('icon-cam-on');
+      const iconOff = document.getElementById('icon-cam-off');
+      const btn = document.getElementById('btn-toggle-cam');
+      const videoEl = document.getElementById('local-video');
+      const avatarEl = document.getElementById('local-avatar');
+
+      if (appState.localStream && appState.localStream.getVideoTracks().length > 0) {
+        appState.localStream.getVideoTracks()[0].enabled = appState.camOn;
+      }
+
+      if (appState.camOn) {
+        iconOn.classList.remove('hidden');
+        iconOff.classList.add('hidden');
+        btn.classList.remove('bg-red-600');
+        videoEl.classList.remove('hidden');
+        avatarEl.classList.add('hidden');
+        showToast('Kamera Aktif');
+      } else {
+        iconOn.classList.add('hidden');
+        iconOff.classList.remove('hidden');
+        btn.classList.add('bg-red-600');
+        videoEl.classList.add('hidden');
+        avatarEl.classList.remove('hidden');
+        showToast('Kamera Nonaktif');
+      }
+
+      // Broadcast media status
+      broadcastMessage({
+        type: 'MEDIA_STATUS',
+        micOn: appState.micOn,
+        camOn: appState.camOn
+      });
+    }
+
+    // Toggle Screen Share
+    async function toggleScreenShare() {
+      const btn = document.getElementById('btn-toggle-screen');
+
+      if (!appState.screenSharing) {
+        try {
+          const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+          appState.screenStream = screenStream;
+          const screenVideoTrack = screenStream.getVideoTracks()[0];
+
+          // Replace track in existing calls
+          Object.values(appState.mediaCalls).forEach(call => {
+            const sender = call.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+            if (sender) {
+              sender.replaceTrack(screenVideoTrack);
+            }
+          });
+
+          document.getElementById('local-video').srcObject = screenStream;
+          appState.screenSharing = true;
+          btn.classList.add('bg-indigo-600', 'text-white');
+          showToast('Mulai membagikan layar', 'success');
+
+          screenVideoTrack.onended = () => {
+            stopScreenShare();
+          };
+        } catch (err) {
+          showToast('Gagal membagikan layar', 'error');
+        }
+      } else {
+        stopScreenShare();
+      }
+    }
+
+    // Stop Screen Share
+    function stopScreenShare() {
+      const btn = document.getElementById('btn-toggle-screen');
+      if (appState.screenStream) {
+        appState.screenStream.getTracks().forEach(t => t.stop());
+      }
+
+      const origVideoTrack = appState.localStream.getVideoTracks()[0];
+      if (origVideoTrack) {
+        Object.values(appState.mediaCalls).forEach(call => {
+          const sender = call.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+          if (sender) {
+            sender.replaceTrack(origVideoTrack);
+          }
+        });
+      }
+
+      document.getElementById('local-video').srcObject = appState.localStream;
+      appState.screenSharing = false;
+      btn.classList.remove('bg-indigo-600', 'text-white');
+      showToast('Berbagi layar dihentikan');
+    }
+
+    // Chat Handler
+    function handleSendChat(e) {
+      e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      // Append local chat
+      appendChatMessage(appState.myName + ' (Anda)', text, timeStr, true);
+
+      // Broadcast chat message
+      broadcastMessage({
+        type: 'CHAT',
+        sender: appState.myName,
+        text: text,
+        time: timeStr
+      });
+
+      input.value = '';
+    }
+
+    // Append chat message to sidebar UI
+    function appendChatMessage(sender, text, time, isMe) {
+      const container = document.getElementById('chat-messages');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'space-y-1';
+
+      msgDiv.innerHTML = `
+        <div class="flex items-center justify-between font-semibold ${isMe ? 'text-indigo-400' : 'text-slate-300'}">
+          <span>${escapeHTML(sender)}</span>
+          <span class="text-[10px] text-slate-500">${time}</span>
+        </div>
+        <div class="p-2.5 rounded-xl ${isMe ? 'bg-indigo-600/30 border border-indigo-500/30' : 'bg-slate-800 border border-slate-700/60'} text-slate-100">
+          ${escapeHTML(text)}
+        </div>
+      `;
+
+      container.appendChild(msgDiv);
+      container.scrollTop = container.scrollHeight;
+
+      if (document.getElementById('drawer-chat').classList.contains('hidden') && !isMe) {
+        document.getElementById('unread-chat-dot').classList.remove('hidden');
+      }
+    }
+
+    // Copy Shareable URL link
+    function copyShareLink() {
+      const fullUrl = `${window.location.origin}${window.location.pathname}?room=${appState.roomCode}`;
+      
+      const tempInput = document.createElement('input');
+      tempInput.value = fullUrl;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+
+      showToast('Link rapat berhasil disalin! Tinggal paste di WhatsApp keluarga.', 'success');
+    }
+
+    // Render Participant List Drawer
+    function renderParticipantsList() {
+      const container = document.getElementById('participants-list');
+      container.innerHTML = '';
+
+      // Local User
+      const localItem = document.createElement('div');
+      localItem.className = 'flex items-center justify-between p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-500/30';
+      localItem.innerHTML = `
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-full bg-indigo-600/30 border border-indigo-500 flex items-center justify-center text-xs font-bold text-indigo-300">
+            ${appState.myName.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-white">${escapeHTML(appState.myName)} (Anda)</p>
+            <p class="text-[10px] text-indigo-400 font-medium">${appState.isHost ? 'Pembuat Ruang' : 'Anggota'}</p>
+          </div>
+        </div>
+        <i data-lucide="${appState.micOn ? 'mic' : 'mic-off'}" class="w-4 h-4 ${appState.micOn ? 'text-emerald-400' : 'text-red-400'}"></i>
+      `;
+      container.appendChild(localItem);
+
+      // Remote Participants
+      const remotes = Object.keys(appState.participants);
+      remotes.forEach(id => {
+        const p = appState.participants[id];
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between p-2.5 rounded-xl bg-slate-950/40 border border-slate-800';
+        item.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-full bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-xs font-bold text-emerald-300">
+              ${p.name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <p class="text-xs font-medium text-slate-200">${escapeHTML(p.name)}</p>
+              <p class="text-[10px] text-slate-500">Anggota</p>
+            </div>
+          </div>
+          <i data-lucide="${p.micOn ? 'mic' : 'mic-off'}" class="w-4 h-4 ${p.micOn ? 'text-emerald-400' : 'text-red-400'}"></i>
+        `;
+        container.appendChild(item);
+      });
+
+      document.getElementById('participant-count-badge').innerText = `${remotes.length + 1} Peserta`;
+      lucide.createIcons();
+    }
+
+    // Drawer Toggles
+    function toggleDrawer(name) {
+      const chatDrawer = document.getElementById('drawer-chat');
+      const partDrawer = document.getElementById('drawer-participants');
+
+      if (name === 'chat') {
+        partDrawer.classList.add('hidden');
+        chatDrawer.classList.toggle('hidden');
+        document.getElementById('unread-chat-dot').classList.add('hidden');
+      } else if (name === 'participants') {
+        chatDrawer.classList.add('hidden');
+        partDrawer.classList.toggle('hidden');
+      }
+    }
+
+    // Connection Status Pill UI
+    function updateConnectionStatus(state, text) {
+      const pill = document.getElementById('connection-status-pill');
+      const statusText = document.getElementById('connection-status-text');
+      statusText.innerText = text;
+
+      if (state === 'connected') {
+        pill.className = 'flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+        pill.querySelector('span').className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
+      } else if (state === 'connecting') {
+        pill.className = 'flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20';
+        pill.querySelector('span').className = 'w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse';
+      } else {
+        pill.className = 'flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full bg-red-500/10 text-red-400 border border-red-500/20';
+        pill.querySelector('span').className = 'w-1.5 h-1.5 rounded-full bg-red-400';
+      }
+    }
+
+    // Meeting Timer
+    function startMeetingTimer() {
+      appState.secondsElapsed = 0;
+      appState.timerInterval = setInterval(() => {
+        appState.secondsElapsed++;
+        const hrs = String(Math.floor(appState.secondsElapsed / 3600)).padStart(2, '0');
+        const mins = String(Math.floor((appState.secondsElapsed % 3600) / 60)).padStart(2, '0');
+        const secs = String(appState.secondsElapsed % 60).padStart(2, '0');
+        document.getElementById('meeting-timer').innerText = `${hrs}:${mins}:${secs}`;
+      }, 1000);
+    }
+
+    // Leave Meeting Call
+    function leaveCall() {
+      if (appState.localStream) {
+        appState.localStream.getTracks().forEach(track => track.stop());
+      }
+      if (appState.screenStream) {
+        appState.screenStream.getTracks().forEach(track => track.stop());
+      }
+      if (appState.peer) {
+        appState.peer.destroy();
+      }
+      clearInterval(appState.timerInterval);
+
+      document.getElementById('view-meeting').classList.add('hidden');
+      document.getElementById('view-ended').classList.remove('hidden');
+    }
+
+    // Return to Main Lobby
+    function returnToLanding() {
+      document.getElementById('view-ended').classList.add('hidden');
+      document.getElementById('view-landing').classList.remove('hidden');
+      generateNewRoomCode();
+    }
+
+    // Escape HTML Helper
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+    }
+  </script>
+</body>
+</html>
